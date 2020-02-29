@@ -1,0 +1,135 @@
+
+library(modeldata)
+library(tidymodels)
+library(tidyverse)
+library(magrittr)
+
+data("okc")
+colnames(okc) <- tolower(names(okc))
+
+okc <- sample_n(okc, 1000)
+
+strata <- "class"
+split <- initial_split(okc, prop = 0.8, strata = strata)
+
+train <- training(split)
+test <- testing(split)
+
+cv <- vfold_cv(
+  train,
+  v = 5,
+  repeats = 1,
+  strata = strata
+)
+
+# Creating base recipe
+recipe_base <- train %>%
+  recipe() %>%
+  
+  ### Roles assignment
+  update_role(strata, new_role = "outcome") %>% 
+  update_role(-one_of(strata), new_role = "predictors")
+
+# Recipe summary
+recipe_summary <- summary(recipe_base)
+
+# Collecting individual variable information
+var_date <- recipe_summary %>% 
+  filter(type == "date") %>% 
+  pull(variable)
+
+var_numeric <- recipe_summary %>% 
+  filter(type == "numeric") %>% 
+  pull(variable)
+
+var_nominal <- recipe_summary %>% 
+  filter(type == "nominal") %>% 
+  pull(variable)
+  
+# Building the actual recipe
+recipe <- recipe_info %>% 
+  
+  ### Handling time predictors
+  step_date(one_of(recipe_var_date)) %>%
+  step_holiday(one_of(recipe_var_date)) %>% 
+  step_rm(has_type("date")) %>% 
+  
+  ### Imputation
+  # Numeric predictors
+  step_medianimpute(all_numeric(), -all_outcomes()) %>%
+  
+  # Categorical predictors
+  step_modeimpute(all_nominal(), -all_outcomes()) %>%
+  
+  ### Lumping infrequent categories (optional)
+  step_other(all_nominal(), -all_outcomes(), other = "infrequent") %>% 
+  
+  ### Removing zero-variance predictors (optional)
+  
+  ### Individual transformations (optional)
+  
+  ### Dummyfying (optional features)
+  step_dummy(all_nominal(), -all_outcomes()) %>% 
+  
+  ### Interactions (optional)
+  
+  ### Normalization (optional)
+  step_normalize(one_of(recipe_var_numeric)) 
+
+  ### Multivariate transformations (optional)
+
+  ### Removing unnecessary predictors
+  
+  ### Checks
+
+# Check the structure of the input file
+prep(recipe) %>% juice() %>% glimpse()
+
+model <- logistic_reg(
+  penalty = tune(),
+  mixture = tune()
+  ) %>%
+  set_mode("classification") %>%
+  set_engine("glmnet")
+
+grid <- grid_max_entropy(
+  penalty(),
+  mixture(),
+  size = 10,
+  variogram_range = 1
+)
+
+workflow <- workflow() %>%
+  add_recipe(recipe) %>%
+  add_model(model)
+
+# Additional validation
+fit <- workflow %>% fit(data = train)
+
+tuning <- tune_grid(
+  workflow,
+  resamples = cv,
+  grid = grid,
+  metrics = metric_set(roc_auc),
+  control = control_grid(verbose = TRUE)
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1582872678724.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "932A9DB5",
+    "lastKnownWriteTime" : 1582873116,
+    "last_content_update" : 1582873116079,
+    "path" : "~/Desktop/new_blogpost/nested_cv_regression.R",
+    "project_path" : "nested_cv_regression.R",
+    "properties" : {
+        "cursorPosition" : "106,37",
+        "scrollLine" : "80"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,9 @@
+{
+    "path" : "~/Desktop/new_blogpost",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}

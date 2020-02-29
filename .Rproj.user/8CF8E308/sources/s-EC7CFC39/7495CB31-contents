@@ -1,0 +1,45 @@
+library(modeldata)
+library(tidymodels)
+library(tidyverse)
+library(magrittr)
+
+data("okc")
+colnames(okc) <- tolower(names(okc))
+
+okc <- sample_n(okc, 1000)
+
+strata <- "class"
+split <- initial_split(okc, prop = 0.8, strata = strata)
+
+train <- training(split)
+test <- testing(split)
+
+cv <- vfold_cv(
+  train,
+  v = 5,
+  repeats = 1,
+  strata = strata
+)
+
+recipe_info <- train %>%
+  recipe() %>%
+  
+  ### Roles assignment
+  update_role(strata, new_role = "outcome") %>% 
+  update_role(-one_of(strata), new_role = "predictors")
+
+recipe <- recipe_info %>%
+  
+  # Numeric predictors
+  step_medianimpute(all_numeric(), all_predictors()) %>%
+  step_BoxCox(all_numeric(), all_predictors()) %>%
+  step_normalize(all_numeric(), all_predictors()) %>%
+  
+  # Categorical predictors
+  step_modeimpute(all_nominal(), all_predictors()) %>% 
+  
+  # Time predictors
+  step_date(date) %>% 
+  step_rm(date) %>% 
+  
+  step_dummy(all_nominal(), all_predictors())
